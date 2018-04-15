@@ -22,8 +22,8 @@ namespace ConsoleApp3
                 1, 0, 0, 1
             };
 
-            var perceptron = new MultiLayerPerceptron(xor, targets, beta: 1, momentum: 0.9, ouTtype:FunType.Logistic);
-            perceptron.Train(100, 0.25);
+            var perceptron = new MultiLayerPerceptron(xor, targets, 4 ,beta: 1, momentum: 0.9, ouTtype:FunType.Logistic);
+            perceptron.Train(10000, 0.25);
             perceptron.ConfusionMatrix(xor, targets);
 
             Console.ReadKey();

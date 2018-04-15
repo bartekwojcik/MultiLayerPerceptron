@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp3
 {
-    public enum FunType //todo zmien nazwe
+    public enum FunType
     {
         Logistic
     }
@@ -27,7 +27,6 @@ namespace ConsoleApp3
 
         public MultiLayerPerceptron(double[,] trainingInput, double[] trainingTargets, int numberOfHiddenNeurons, int beta, double momentum, FunType ouTtype)
         {
-
             this._beta = beta;
             this._momentum = momentum;
             this._ouTtype = ouTtype;
@@ -44,13 +43,11 @@ namespace ConsoleApp3
 
             this._lastOutputUpdates = new double[_outputWeights.Length];
             this._lastHiddenUpdates = new double[numberOfHiddenNeurons, _trainingInput.GetLength(1)];
-
         }
 
 
         public void Train(int iterations, double eta)
         {
-          
             for (int i = 0; i < iterations; i++)
             {
                 this._currentIteration = i;
@@ -62,26 +59,23 @@ namespace ConsoleApp3
 
         private void BackwardsPhase(double[] outputs, double[,] hiddenResults, double eta)
         {
-
             var deltasOs = new double[outputs.Length];
             for (int i = 0; i < outputs.Length; i++)
             {
                 var output = outputs[i];
                 var target = _trainingTargets[i];
-                var deltaO = _beta*(output - target) * output * (1 - output);
+                var deltaO = _beta * (output - target) * output * (1 - output);
                 deltasOs[i] = deltaO;
                 for (int j = 0; j < _outputWeights.Length; j++)
                 {
                     var neuron = hiddenResults[i, j];
                     var update = eta * deltaO * neuron;
                     var currentValue = _outputWeights[j];
-                    var wholeUpdate = update;// + _momentum * _lastOutputUpdates[j];
-                    _outputWeights[j] = currentValue + wholeUpdate;
+                    var wholeUpdate = update + _momentum * _lastOutputUpdates[j];
+                    _outputWeights[j] = currentValue - wholeUpdate;
                     _lastOutputUpdates[j] = update;
                 }
             }
-
-            var debug = 5;
 
             //here is the highest chance of mistake
             var test = new string[_numberOfHiddenNeurons, _hiddenWeights.GetLength(1)];
@@ -94,28 +88,25 @@ namespace ConsoleApp3
                     var neuron = hiddenResults[i, j];
 
                     var deltaO = deltasOs[j];
-                   
+
                     for (int k = 0; k < _trainingInput.GetLength(1); k++)
                     {
                         var weight = _hiddenWeights[k, j];
                         sum += deltaO * weight;
-                       
+
                     }
 
-                  
+
                     var deltaH = neuron * (1 - neuron) * sum;
                     deltasHs[i, j] = deltaH;
-                
+
                     var update = eta * deltaH * _trainingInput[i, j];
                     var currentValue = _hiddenWeights[i, j];
-                    var wholeUpdate = update;// + _momentum * _lastHiddenUpdates[i, j];
-                    _hiddenWeights[i, j] = currentValue + wholeUpdate;
+                    var wholeUpdate = update + _momentum * _lastHiddenUpdates[i, j];
+                    _hiddenWeights[i, j] = currentValue - wholeUpdate;
                     _lastHiddenUpdates[i, j] = update;
                 }
             }
-
-            var debu2g = 5;
-
         }
 
         private ForwardPhaseResult ForwardPhase(double[,] inputs)
@@ -129,7 +120,6 @@ namespace ConsoleApp3
                 HiddenValues = hiddenNeuronsValues,
                 OutputResult = outputs
             };
-
         }
 
         private double[] CalculateOutputLayerValue(double[,] hiddenNeuronsValues, double[,] inputs)
@@ -178,19 +168,16 @@ namespace ConsoleApp3
                             }
                         }
                     }
-
                     var sigmoidValue = MathHelper.Sigmoid(hiddenLayerNauronValues[i, j], _beta);
                     hiddenLayerNauronValues[i, j] = sigmoidValue;
                 }
-
             }
-
-
             return hiddenLayerNauronValues;
         }
 
         public void ConfusionMatrix(double[,] inputs, double[] targets)
         {
+            //for now i am just simple priting output and targets
             var biasedInputs = ArrayHelper.AddBiasInput(inputs);
             var forwardPhaseResult = ForwardPhase(biasedInputs);
             var outputs = forwardPhaseResult.OutputResult;

@@ -19,7 +19,7 @@ namespace ConsoleApp3
             };
             var targets = new double[]
             {
-                1, 0, 0, 1
+                0, 1, 1, 0
             };
 
             var perceptron = new MultiLayerPerceptron(xor, targets, 4 ,beta: 1, momentum: 0.9, ouTtype:FunType.Logistic);

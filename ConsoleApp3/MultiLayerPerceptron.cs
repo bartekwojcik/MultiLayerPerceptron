@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -38,8 +39,8 @@ namespace ConsoleApp3
             this._hiddenWeights = new double[numberOfHiddenNeurons, _trainingInput.GetLength(1)];
             this._outputWeights = new double[numberOfHiddenNeurons + 1];
 
-            _hiddenWeights = ArrayHelper.SetRandomWeights(_hiddenWeights);
-            _outputWeights = ArrayHelper.SetRandomWeights(_outputWeights);
+            _hiddenWeights = ArrayHelper.SetRandomWeights(_hiddenWeights, numberOfHiddenNeurons);
+            _outputWeights = ArrayHelper.SetRandomWeights(_outputWeights, numberOfHiddenNeurons);
 
             this._lastOutputUpdates = new double[_outputWeights.Length];
             this._lastHiddenUpdates = new double[numberOfHiddenNeurons, _trainingInput.GetLength(1)];
@@ -50,11 +51,11 @@ namespace ConsoleApp3
         {
             for (int i = 0; i < iterations; i++)
             {
+              //  ShuffleRows();
                 this._currentIteration = i;
                 var result = ForwardPhase(_trainingInput);
                 BackwardsPhase(result.OutputResult, result.HiddenValues, eta);
             }
-
         }
 
         private void BackwardsPhase(double[] outputs, double[,] hiddenResults, double eta)
@@ -80,31 +81,35 @@ namespace ConsoleApp3
             //here is the highest chance of mistake
             var test = new string[_numberOfHiddenNeurons, _hiddenWeights.GetLength(1)];
             var deltasHs = new Double[_numberOfHiddenNeurons, _hiddenWeights.GetLength(1)];
-            for (int i = 0; i < _hiddenWeights.GetLength(0); i++)
+
+            for (int m = 0; m < _trainingInput.GetLength(0); m++)
             {
-                for (int j = 0; j < _hiddenWeights.GetLength(1); j++)
+                var row = _trainingInput.GetRow(m);
+                for (int i = 0; i < _hiddenWeights.GetLength(0); i++)
                 {
-                    var sum = 0.0;
-                    var neuron = hiddenResults[i, j];
-
-                    var deltaO = deltasOs[j];
-
-                    for (int k = 0; k < _trainingInput.GetLength(1); k++)
+                    for (int j = 0; j < _hiddenWeights.GetLength(1); j++)
                     {
-                        var weight = _hiddenWeights[k, j];
-                        sum += deltaO * weight;
+                        var sum = 0.0;
+                        var neuron = hiddenResults[j, i];
+
+                        var deltaO = deltasOs[j];
+
+                        for (int k = 0; k < _trainingInput.GetLength(1); k++)
+                        {
+                            var weight = _hiddenWeights[j, k];
+                            sum += deltaO * weight;
+                        }
+
+                        var deltaH = neuron * (1 - neuron) * sum;
+                        deltasHs[i, j] = deltaH;
+
+                        var update = eta * deltaH * row[j];
+                        var currentValue = _hiddenWeights[i, j];
+                        var wholeUpdate = update; // + _momentum * _lastHiddenUpdates[i, j];
+                        _hiddenWeights[i, j] = currentValue - wholeUpdate;
+                        _lastHiddenUpdates[i, j] = update;
 
                     }
-
-
-                    var deltaH = neuron * (1 - neuron) * sum;
-                    deltasHs[i, j] = deltaH;
-
-                    var update = eta * deltaH * _trainingInput[i, j];
-                    var currentValue = _hiddenWeights[i, j];
-                    var wholeUpdate = update + _momentum * _lastHiddenUpdates[i, j];
-                    _hiddenWeights[i, j] = currentValue - wholeUpdate;
-                    _lastHiddenUpdates[i, j] = update;
                 }
             }
         }
@@ -193,12 +198,65 @@ namespace ConsoleApp3
                 Console.Out.WriteLine(line);
             }
 
-            Console.ReadKey();
         }
 
         public double EarlyStopping()
         {
             throw new NotImplementedException();
+        }
+
+
+
+        private void ShuffleRows()
+        {
+            var dim1 = _trainingInput.GetLength(0);
+            var dim2 = _trainingInput.GetLength(1);
+            var all = new double[dim1, dim2 + 1];
+            var list = new List<double[]>();
+            for (int j = 0; j < dim1; j++)
+            {
+                for (int k = 0; k < dim2 + 1; k++)
+                {
+                    if (k < dim2)
+                    {
+                        all[j, k] = _trainingInput[j, k];
+                    }
+                    else
+                    {
+                        all[j, k] = _trainingTargets[j];
+                    }
+                }
+
+                var thisRow = all.GetRow(j);
+                list.Add(thisRow);
+            }
+
+            var shuffled = list.OrderBy(a => Guid.NewGuid()).ToList();
+
+            var newAll = new double[dim1, dim2 + 1];
+            for (int j = 0; j < dim1; j++)
+            {
+                for (int k = 0; k < dim2 + 1; k++)
+                {
+                    newAll[j, k] = shuffled[j][k];
+                }
+            }
+
+            for (int j = 0; j < dim1; j++)
+            {
+                for (int k = 0; k < dim2 + 1; k++)
+                {
+                    if (k < dim2)
+                    {
+                        _trainingInput[j, k] = newAll[j, k];
+                    }
+                    else
+                    {
+                        _trainingTargets[j] = newAll[j, k];
+                    }
+                }
+            }
+
         }
 
         //run forward

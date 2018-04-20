@@ -14,26 +14,26 @@ namespace ConsoleApp3
         {
             random = new Random();
         }
-        public static double[,] SetRandomWeights(double[,] hiddenWeights)
+        public static double[,] SetRandomWeights(double[,] hiddenWeights,int numberOfNeurons)
         {
             for (int i = 0; i < hiddenWeights.GetLength(0); i++)
             {
                 for (int j = 0; j < hiddenWeights.GetLength(1); j++)
                 {
-                    var random = GetRandForWeight();
-                    hiddenWeights[i, j] = random;
+                    var randValue = GetRandForWeight(numberOfNeurons);
+                    hiddenWeights[i, j] = randValue;
                 }
             }
 
             return hiddenWeights;
         }
 
-        public static double GetRandForWeight()
+        public static double GetRandForWeight(int numberOfNeurons)
         {
             var rand = random.NextDouble();
             rand = rand - 0.5;
             rand = rand * 2;
-            rand = rand / Math.Sqrt(2);
+            rand = rand / Math.Sqrt(numberOfNeurons);
             return rand;
             //var rand = (double)random.Next(10, 100);
             //rand = rand / 1000.0;
@@ -41,12 +41,12 @@ namespace ConsoleApp3
             //return randWeight;
         }
 
-        public static double[] SetRandomWeights(double[] weights)
+        public static double[] SetRandomWeights(double[] weights, int numberOfNeurons)
         {
             var random = new Random();
             for (int i = 0; i < weights.Length; i++)
             {
-                weights[i] = GetRandForWeight();
+                weights[i] = GetRandForWeight(numberOfNeurons);
             }
 
             return weights;

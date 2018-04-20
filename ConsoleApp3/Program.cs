@@ -10,21 +10,51 @@ namespace ConsoleApp3
     {
         static void Main(string[] args)
         {
-            var xor = new double[,]
+            int interation = 50000;
+            double eta = 0.25;
+            int neurons = 5;
+            var inputs = new double[,]
             {
                 {0, 0},
                 {1, 0},
                 {0, 1},
                 {1, 1},
             };
-            var targets = new double[]
+            var xortargets = new double[]
             {
                 0, 1, 1, 0
             };
+            var ortargets = new double[]
+            {
+                0, 1, 1, 1
+            };
+            var andtargets = new double[]
+            {
+                0, 0, 0, 1
+            };
 
-            var perceptron = new MultiLayerPerceptron(xor, targets, 4 ,beta: 1, momentum: 0.9, ouTtype:FunType.Logistic);
-            perceptron.Train(10000, 0.25);
-            perceptron.ConfusionMatrix(xor, targets);
+            var perceptron = new MultiLayerPerceptron(inputs, xortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
+            var perceptron1 = new MultiLayerPerceptron(inputs, ortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
+            var perceptron2 = new MultiLayerPerceptron(inputs, andtargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
+
+            var tasks = new Task[]
+            {
+                Task.Factory.StartNew(() => perceptron.Train(interation, eta)),
+                Task.Factory.StartNew(() => perceptron1.Train(interation, eta)),
+                Task.Factory.StartNew(() => perceptron2.Train(interation, eta))
+            };
+
+            Console.Out.WriteLine("Start" + Environment.NewLine);
+            Task.WaitAll(tasks);
+            Console.Out.WriteLine("Stop" + Environment.NewLine);
+            Console.WriteLine("XOR");
+            perceptron.ConfusionMatrix(inputs, xortargets);
+            Console.Out.WriteLine(Environment.NewLine);
+            Console.WriteLine("OR");
+            perceptron1.ConfusionMatrix(inputs, ortargets);
+            Console.Out.WriteLine(Environment.NewLine);
+            Console.WriteLine("AND");
+            perceptron2.ConfusionMatrix(inputs, andtargets);
 
             Console.ReadKey();
         }

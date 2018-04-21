@@ -35,15 +35,10 @@ namespace ConsoleApp3
             rand = rand * 2;
             rand = rand / Math.Sqrt(numberOfNeurons);
             return rand;
-            //var rand = (double)random.Next(10, 100);
-            //rand = rand / 1000.0;
-            //var randWeight = rand - 0.05;
-            //return randWeight;
         }
 
         public static double[] SetRandomWeights(double[] weights, int numberOfNeurons)
         {
-            var random = new Random();
             for (int i = 0; i < weights.Length; i++)
             {
                 weights[i] = GetRandForWeight(numberOfNeurons);

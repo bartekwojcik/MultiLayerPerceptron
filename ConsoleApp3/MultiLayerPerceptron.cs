@@ -23,8 +23,8 @@ namespace ConsoleApp3
         private readonly double[,] _hiddenWeights;
         private readonly double[] _outputWeights;
         private int _currentIteration;
-        private readonly double[] _lastOutputUpdates;
-        private readonly double[,] _lastHiddenUpdates;
+        private double[] _lastOutputUpdates;
+        private double[,] _lastHiddenUpdates;
 
         public MultiLayerPerceptron(double[,] trainingInput, double[] trainingTargets, int numberOfHiddenNeurons, int beta, double momentum, FunType ouTtype)
         {
@@ -42,16 +42,17 @@ namespace ConsoleApp3
             _hiddenWeights = ArrayHelper.SetRandomWeights(_hiddenWeights, numberOfHiddenNeurons);
             _outputWeights = ArrayHelper.SetRandomWeights(_outputWeights, numberOfHiddenNeurons);
 
-            this._lastOutputUpdates = new double[_outputWeights.Length];
-            this._lastHiddenUpdates = new double[_numberOfHiddenNeurons, _trainingInput.GetLength(1)];
+
         }
 
 
         public void Train(int iterations, double eta)
         {
+            _lastHiddenUpdates = new double[_hiddenWeights.RowLength(), _hiddenWeights.ColumnLength() + 1];
+            _lastOutputUpdates = new double[_outputWeights.Length];
             for (int i = 0; i < iterations; i++)
             {
-                //ShuffleRows();
+                ShuffleRows();
                 this._currentIteration = i;
                 var result = ForwardPhase(_trainingInput);
                 BackwardsPhase(result.OutputResult, result.HiddenValues, eta);
@@ -79,23 +80,32 @@ namespace ConsoleApp3
             {
                 for (int j = 0; j < _hiddenWeights.ColumnLength(); j++)
                 {
+
+                    double fullUpdate = 0;
                     for (int k = 0; k < _trainingInput.RowLength(); k++)
                     {
                         var update = eta * _trainingInput[k, i] * deltasHs[k, j];
-                        var fullUpdate = update;
-                        _hiddenWeights[i, j] = _hiddenWeights[i, j] - fullUpdate;
+                        fullUpdate += update;
                     }
+                    var momentum = _momentum * _lastHiddenUpdates[i, j];
+                    fullUpdate += momentum;
+                    _lastHiddenUpdates[i, j] = fullUpdate;
+                    _hiddenWeights[i, j] = _hiddenWeights[i, j] - fullUpdate;
                 }
             }
 
             for (int i = 0; i < _outputWeights.Length; i++)
             {
+                double fullUpdate = 0;
                 for (int k = 0; k < hiddenResults.RowLength(); k++)
                 {
                     var update = eta * hiddenResults[k, i] * deltasOs[k];
-                    var fullUpdate = update;
-                    _outputWeights[i] = _outputWeights[i] - fullUpdate;
+                    fullUpdate += update;
                 }
+                var momentum = _momentum * _lastOutputUpdates[i];
+                fullUpdate += momentum;
+                _outputWeights[i] = _outputWeights[i] - fullUpdate;
+                _lastOutputUpdates[i] = fullUpdate;
             }
 
         }

@@ -10,7 +10,7 @@ namespace ConsoleApp3
     {
         static void Main(string[] args)
         {
-            int interation = 10000;
+            int interation = 500;
             double eta = 0.25;
             int neurons = 5;
             var inputs = new double[,]
@@ -39,6 +39,9 @@ namespace ConsoleApp3
             var andtargets1 = new double[andtargets.Length];
             andtargets.CopyTo(andtargets1, 0);
 
+            var xortargets1 = new double[xortargets.Length];
+            xortargets.CopyTo(xortargets1, 0);
+
             var xorPerc = new MultiLayerPerceptron(inputs, xortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
             var orPerc = new MultiLayerPerceptron(inputs, ortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
             var andPerc = new MultiLayerPerceptron(inputs, andtargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
@@ -57,7 +60,7 @@ namespace ConsoleApp3
             //xorPerc.Train(interation,eta);
 
             Console.WriteLine("XOR");
-            xorPerc.ConfusionMatrix(inputs, xortargets);
+            xorPerc.ConfusionMatrix(inputs, xortargets1);
             Console.Out.WriteLine(Environment.NewLine);
 
             Console.WriteLine("OR");

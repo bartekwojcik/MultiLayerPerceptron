@@ -33,6 +33,12 @@ namespace ConsoleApp3
                 0, 0, 0, 1
             };
 
+            var ortatgets1 = new double[ortargets.Length];
+            ortargets.CopyTo(ortatgets1,0);
+
+            var andtargets1 = new double[andtargets.Length];
+            andtargets.CopyTo(andtargets1, 0);
+
             var xorPerc = new MultiLayerPerceptron(inputs, xortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
             var orPerc = new MultiLayerPerceptron(inputs, ortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
             var andPerc = new MultiLayerPerceptron(inputs, andtargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
@@ -48,16 +54,18 @@ namespace ConsoleApp3
             Task.WaitAll(tasks);
             Console.Out.WriteLine("Stop" + Environment.NewLine);
 
+            //xorPerc.Train(interation,eta);
+
             Console.WriteLine("XOR");
             xorPerc.ConfusionMatrix(inputs, xortargets);
             Console.Out.WriteLine(Environment.NewLine);
 
             Console.WriteLine("OR");
-            orPerc.ConfusionMatrix(inputs, ortargets);
+            orPerc.ConfusionMatrix(inputs, ortatgets1);
             Console.Out.WriteLine(Environment.NewLine);
 
             Console.WriteLine("AND");
-            andPerc.ConfusionMatrix(inputs, andtargets);
+            andPerc.ConfusionMatrix(inputs, andtargets1);
 
             Console.ReadKey();
         }

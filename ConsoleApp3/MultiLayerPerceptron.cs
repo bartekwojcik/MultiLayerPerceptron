@@ -51,7 +51,7 @@ namespace ConsoleApp3
         {
             for (int i = 0; i < iterations; i++)
             {
-                ShuffleRows();
+                //ShuffleRows();
                 this._currentIteration = i;
                 var result = ForwardPhase(_trainingInput);
                 BackwardsPhase(result.OutputResult, result.HiddenValues, eta);
@@ -65,26 +65,25 @@ namespace ConsoleApp3
             {
                 deltasOs[i] = (outputs[i] - _trainingTargets[i]) * outputs[i] * (1 - outputs[i]);
             }
-            
-            var deltasHs = new Double[hiddenResults.RowLength(),hiddenResults.ColumnLength()];
+
+            var deltasHs = new Double[hiddenResults.RowLength(), hiddenResults.ColumnLength()];
             for (int i = 0; i < deltasHs.RowLength(); i++)
             {
                 for (int j = 0; j < deltasHs.ColumnLength(); j++)
                 {
-                    deltasHs[i, j] += hiddenResults[i, j] * deltasOs[i] * _outputWeights[j];
+                    deltasHs[i, j] = deltasHs[i, j] + hiddenResults[i, j] * deltasOs[i] * _outputWeights[j];
                 }
             }
 
-            for (int i = 0; i < deltasHs.RowLength(); i++)
+            for (int i = 0; i < _hiddenWeights.RowLength(); i++)
             {
-                for (int j = 0; j < deltasHs.ColumnLength(); j++)
+                for (int j = 0; j < _hiddenWeights.ColumnLength(); j++)
                 {
                     for (int k = 0; k < _trainingInput.RowLength(); k++)
                     {
-                        var momentum = 0; //TODO ADD
                         var update = eta * _trainingInput[k, i] * deltasHs[k, j];
-                        var fullUpdate = update + momentum;
-                        _hiddenWeights[i, j] -= fullUpdate;
+                        var fullUpdate = update;
+                        _hiddenWeights[i, j] = _hiddenWeights[i, j] - fullUpdate;
                     }
                 }
             }
@@ -93,13 +92,12 @@ namespace ConsoleApp3
             {
                 for (int k = 0; k < hiddenResults.RowLength(); k++)
                 {
-                    var momentum = 0;
-                    var update = eta * hiddenResults[k,i] * deltasOs[i];
-                    var fullUpdate = update + momentum;
-                    _outputWeights[i] -= fullUpdate;
+                    var update = eta * hiddenResults[k, i] * deltasOs[k];
+                    var fullUpdate = update;
+                    _outputWeights[i] = _outputWeights[i] - fullUpdate;
                 }
             }
-            
+
         }
 
         private ForwardPhaseResult ForwardPhase(double[,] inputs)
@@ -123,8 +121,13 @@ namespace ConsoleApp3
             {
                 for (int k = 0; k < _outputWeights.Length; k++)
                 {
-                    outputs[i] += hiddenNeuronsValues[i, k] * _outputWeights[k];
+                    var value = hiddenNeuronsValues[i, k];
+                    var weight = _outputWeights[k];
+                    var mult = value * weight;
+                    outputs[i] = outputs[i] + mult;
                 }
+                var sigmoidValue = MathHelper.Sigmoid(outputs[i], _beta);
+                outputs[i] = sigmoidValue;
             }
             return outputs;
         }
@@ -139,13 +142,16 @@ namespace ConsoleApp3
                 {
                     for (int k = 0; k < inputs.ColumnLength(); k++)
                     {
-                        hiddenLayerNauronValues[i, j] += inputs[i, k] * _hiddenWeights[k, j];
+                        var input = inputs[i, k];
+                        var weight = _hiddenWeights[k, j];
+                        var mult = input * weight;
+                        hiddenLayerNauronValues[i, j] = hiddenLayerNauronValues[i, j] + mult;
                     }
                     var sigmoidValue = MathHelper.Sigmoid(hiddenLayerNauronValues[i, j], _beta);
                     hiddenLayerNauronValues[i, j] = sigmoidValue;
                 }
             }
-           
+
             return hiddenLayerNauronValues;
         }
 
@@ -163,7 +169,7 @@ namespace ConsoleApp3
                     line += $"{inputs[i, j]}, ";
                 }
 
-                line += $"| target: {targets[i]}, output: {Math.Round(outputs[i],4)}";
+                line += $"| target: {targets[i]}, output: {Math.Round(outputs[i], 4)}";
                 Console.Out.WriteLine(line);
             }
 

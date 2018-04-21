@@ -90,6 +90,16 @@ namespace ConsoleApp3
             return localInputs;
         }
 
+        public static int RowLength(this double[,] array)
+        {
+            return array.GetLength(0);
+        }
+
+        public static int ColumnLength(this double[,] array)
+        {
+            return array.GetLength(1);
+        }
+
         public static double[] GetRow(this double[,] trainingInputs, int rowIndex)
         {
             var result = new double[trainingInputs.GetLength(1)];

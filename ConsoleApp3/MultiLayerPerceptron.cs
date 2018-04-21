@@ -14,17 +14,17 @@ namespace ConsoleApp3
 
     public class MultiLayerPerceptron
     {
-        private double[,] _trainingInput;
-        private double[] _trainingTargets;
+        private readonly double[,] _trainingInput;
+        private readonly double[] _trainingTargets;
         private int _beta;
-        private double _momentum;
+        private readonly double _momentum;
         private FunType _ouTtype;
-        private int _numberOfHiddenNeurons;
-        private double[,] _hiddenWeights;
+        private readonly int _numberOfHiddenNeurons;
+        private readonly double[,] _hiddenWeights;
         private readonly double[] _outputWeights;
         private int _currentIteration;
-        private double[] _lastOutputUpdates;
-        private double[,] _lastHiddenUpdates;
+        private readonly double[] _lastOutputUpdates;
+        private readonly double[,] _lastHiddenUpdates;
 
         public MultiLayerPerceptron(double[,] trainingInput, double[] trainingTargets, int numberOfHiddenNeurons, int beta, double momentum, FunType ouTtype)
         {
@@ -36,14 +36,14 @@ namespace ConsoleApp3
             this._trainingInput = ArrayHelper.AddBiasInput(trainingInput); // + bias
             this._trainingTargets = trainingTargets;
 
-            this._hiddenWeights = new double[numberOfHiddenNeurons, _trainingInput.GetLength(1)];
+            this._hiddenWeights = new double[_trainingInput.GetLength(1), numberOfHiddenNeurons];
             this._outputWeights = new double[numberOfHiddenNeurons + 1];
 
             _hiddenWeights = ArrayHelper.SetRandomWeights(_hiddenWeights, numberOfHiddenNeurons);
             _outputWeights = ArrayHelper.SetRandomWeights(_outputWeights, numberOfHiddenNeurons);
 
             this._lastOutputUpdates = new double[_outputWeights.Length];
-            this._lastHiddenUpdates = new double[numberOfHiddenNeurons, _trainingInput.GetLength(1)];
+            this._lastHiddenUpdates = new double[_numberOfHiddenNeurons, _trainingInput.GetLength(1)];
         }
 
 
@@ -51,7 +51,7 @@ namespace ConsoleApp3
         {
             for (int i = 0; i < iterations; i++)
             {
-              //  ShuffleRows();
+                ShuffleRows();
                 this._currentIteration = i;
                 var result = ForwardPhase(_trainingInput);
                 BackwardsPhase(result.OutputResult, result.HiddenValues, eta);
@@ -63,55 +63,43 @@ namespace ConsoleApp3
             var deltasOs = new double[outputs.Length];
             for (int i = 0; i < outputs.Length; i++)
             {
-                var output = outputs[i];
-                var target = _trainingTargets[i];
-                var deltaO = _beta * (output - target) * output * (1 - output);
-                deltasOs[i] = deltaO;
-                for (int j = 0; j < _outputWeights.Length; j++)
+                deltasOs[i] = (outputs[i] - _trainingTargets[i]) * outputs[i] * (1 - outputs[i]);
+            }
+            
+            var deltasHs = new Double[hiddenResults.RowLength(),hiddenResults.ColumnLength()];
+            for (int i = 0; i < deltasHs.RowLength(); i++)
+            {
+                for (int j = 0; j < deltasHs.ColumnLength(); j++)
                 {
-                    var neuron = hiddenResults[i, j];
-                    var update = eta * deltaO * neuron;
-                    var currentValue = _outputWeights[j];
-                    var wholeUpdate = update + _momentum * _lastOutputUpdates[j];
-                    _outputWeights[j] = currentValue - wholeUpdate;
-                    _lastOutputUpdates[j] = update;
+                    deltasHs[i, j] += hiddenResults[i, j] * deltasOs[i] * _outputWeights[j];
                 }
             }
 
-            //here is the highest chance of mistake
-            var test = new string[_numberOfHiddenNeurons, _hiddenWeights.GetLength(1)];
-            var deltasHs = new Double[_numberOfHiddenNeurons, _hiddenWeights.GetLength(1)];
-
-            for (int m = 0; m < _trainingInput.GetLength(0); m++)
+            for (int i = 0; i < deltasHs.RowLength(); i++)
             {
-                var row = _trainingInput.GetRow(m);
-                for (int i = 0; i < _hiddenWeights.GetLength(0); i++)
+                for (int j = 0; j < deltasHs.ColumnLength(); j++)
                 {
-                    for (int j = 0; j < _hiddenWeights.GetLength(1); j++)
+                    for (int k = 0; k < _trainingInput.RowLength(); k++)
                     {
-                        var sum = 0.0;
-                        var neuron = hiddenResults[j, i];
-
-                        var deltaO = deltasOs[j];
-
-                        for (int k = 0; k < _trainingInput.GetLength(1); k++)
-                        {
-                            var weight = _hiddenWeights[j, k];
-                            sum += deltaO * weight;
-                        }
-
-                        var deltaH = neuron * (1 - neuron) * sum;
-                        deltasHs[i, j] = deltaH;
-
-                        var update = eta * deltaH * row[j];
-                        var currentValue = _hiddenWeights[i, j];
-                        var wholeUpdate = update; // + _momentum * _lastHiddenUpdates[i, j];
-                        _hiddenWeights[i, j] = currentValue - wholeUpdate;
-                        _lastHiddenUpdates[i, j] = update;
-
+                        var momentum = 0; //TODO ADD
+                        var update = eta * _trainingInput[k, i] * deltasHs[k, j];
+                        var fullUpdate = update + momentum;
+                        _hiddenWeights[i, j] -= fullUpdate;
                     }
                 }
             }
+
+            for (int i = 0; i < _outputWeights.Length; i++)
+            {
+                for (int k = 0; k < hiddenResults.RowLength(); k++)
+                {
+                    var momentum = 0;
+                    var update = eta * hiddenResults[k,i] * deltasOs[i];
+                    var fullUpdate = update + momentum;
+                    _outputWeights[i] -= fullUpdate;
+                }
+            }
+            
         }
 
         private ForwardPhaseResult ForwardPhase(double[,] inputs)
@@ -130,20 +118,13 @@ namespace ConsoleApp3
         private double[] CalculateOutputLayerValue(double[,] hiddenNeuronsValues, double[,] inputs)
         {
             var outputs = new double[inputs.GetLength(0)];
-            var test = new string[inputs.GetLength(0)];
-            for (int i = 0; i < outputs.Length; i++)
+
+            for (int i = 0; i < hiddenNeuronsValues.RowLength(); i++)
             {
                 for (int k = 0; k < _outputWeights.Length; k++)
                 {
-                    var neuron = hiddenNeuronsValues[i, k];
-                    var weight = _outputWeights[k];
-                    outputs[i] += neuron * weight;
-                    test[i] += $"N{i + 1}{k + 1}*w{k + 1} +";
+                    outputs[i] += hiddenNeuronsValues[i, k] * _outputWeights[k];
                 }
-
-
-                var sigmoidValue = MathHelper.Sigmoid(outputs[i], _beta);
-                outputs[i] = sigmoidValue;
             }
             return outputs;
         }
@@ -151,32 +132,20 @@ namespace ConsoleApp3
         private double[,] CalculateHiddenLayer(double[,] inputs)
         {
             var hiddenLayerNauronValues = new double[inputs.GetLength(0), _numberOfHiddenNeurons];
-            var test = new string[inputs.GetLength(0), _numberOfHiddenNeurons];
 
-            for (int i = 0; i < inputs.GetLength(0); i++)
+            for (int i = 0; i < inputs.RowLength(); i++)
             {
-                var row = inputs.GetRow(i);
                 for (int j = 0; j < _numberOfHiddenNeurons; j++)
                 {
-
-                    for (int k = 0; k < row.Length; k++)
+                    for (int k = 0; k < inputs.ColumnLength(); k++)
                     {
-                        for (int l = 0; l < _hiddenWeights.GetLength(0); l++)
-                        {
-                            var input = row[k];
-                            var weight = _hiddenWeights[j, k];
-                            var delta = input * weight;
-                            if (l == j)
-                            {
-                                test[i, j] += $"x{k + 1}*w{j + 1}{k + 1} +";
-                                hiddenLayerNauronValues[i, j] += delta;
-                            }
-                        }
+                        hiddenLayerNauronValues[i, j] += inputs[i, k] * _hiddenWeights[k, j];
                     }
                     var sigmoidValue = MathHelper.Sigmoid(hiddenLayerNauronValues[i, j], _beta);
                     hiddenLayerNauronValues[i, j] = sigmoidValue;
                 }
             }
+           
             return hiddenLayerNauronValues;
         }
 
@@ -194,7 +163,7 @@ namespace ConsoleApp3
                     line += $"{inputs[i, j]}, ";
                 }
 
-                line += $"| target: {targets[i]}, output: {outputs[i]}";
+                line += $"| target: {targets[i]}, output: {Math.Round(outputs[i],4)}";
                 Console.Out.WriteLine(line);
             }
 

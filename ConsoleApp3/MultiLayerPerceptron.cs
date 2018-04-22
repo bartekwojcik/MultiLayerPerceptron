@@ -182,6 +182,36 @@ namespace ConsoleApp3
                 line += $"| target: {targets[i]}, output: {Math.Round(outputs[i], 4)}";
                 Console.Out.WriteLine(line);
             }
+            var classes = targets.Distinct().ToArray();
+
+            var confusionMatrix = new int[classes.Length, classes.Length];
+
+            for (int i = 0; i < outputs.Length; i++)
+            {
+                var target = targets[i];
+                var output = outputs[i];
+                var targetRound = (int)Math.Round(target);
+                var outputRound = (int)Math.Round(output);
+                confusionMatrix[targetRound, outputRound]++;
+            }
+
+            int rowLength = confusionMatrix.GetLength(0);
+            int colLength = confusionMatrix.GetLength(1);
+
+
+            for (int i = 0; i < rowLength; i++)
+            {
+                Console.WriteLine("---------------------");
+                for (int j = 0; j < colLength; j++)
+                {
+                    Console.Write($"| {confusionMatrix[i, j]} |");
+                }
+
+                Console.Write(Environment.NewLine+ Environment.NewLine);
+            }
+            Console.Write("---------------------");
+            
+            Console.Write( Environment.NewLine);
 
         }
 

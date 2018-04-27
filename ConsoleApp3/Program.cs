@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using ConsoleApp3.Algorithms;
 
 namespace ConsoleApp3
 {
@@ -13,6 +15,8 @@ namespace ConsoleApp3
             int interation = 500;
             double eta = 0.25;
             int neurons = 5;
+            var beta = 1;
+            var momentum = 0.9;
             var inputs = new double[,]
             {
                 {0, 0},
@@ -42,9 +46,11 @@ namespace ConsoleApp3
             var xortargets1 = new double[xortargets.Length];
             xortargets.CopyTo(xortargets1, 0);
 
-            var xorPerc = new MultiLayerPerceptron(inputs, xortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
-            var orPerc = new MultiLayerPerceptron(inputs, ortargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
-            var andPerc = new MultiLayerPerceptron(inputs, andtargets, neurons, beta: 1, momentum: 0.9, ouTtype: FunType.Logistic);
+            var algorithm = new Logistic(beta);
+
+            var xorPerc = new MultiLayerPerceptron(inputs, xortargets, neurons, beta, momentum, algorithm);
+            var orPerc = new MultiLayerPerceptron(inputs, ortargets, neurons, beta, momentum, algorithm);
+            var andPerc = new MultiLayerPerceptron(inputs, andtargets, neurons, beta, momentum, algorithm);
 
             var tasks = new Task[]
             {

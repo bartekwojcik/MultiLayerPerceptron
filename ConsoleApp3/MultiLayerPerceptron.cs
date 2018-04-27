@@ -4,21 +4,17 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ConsoleApp3.Algorithms;
 
 namespace ConsoleApp3
 {
-    public enum FunType
-    {
-        Logistic
-    }
-
     public class MultiLayerPerceptron
     {
         private readonly double[,] _trainingInput;
         private readonly double[] _trainingTargets;
-        private int _beta;
+        private double _beta;
         private readonly double _momentum;
-        private FunType _ouTtype;
+        private readonly IAlgorithm _algorithm;
         private readonly int _numberOfHiddenNeurons;
         private readonly double[,] _hiddenWeights;
         private readonly double[] _outputWeights;
@@ -26,11 +22,11 @@ namespace ConsoleApp3
         private double[] _lastOutputUpdates;
         private double[,] _lastHiddenUpdates;
 
-        public MultiLayerPerceptron(double[,] trainingInput, double[] trainingTargets, int numberOfHiddenNeurons, int beta, double momentum, FunType ouTtype)
+        public MultiLayerPerceptron(double[,] trainingInput, double[] trainingTargets, int numberOfHiddenNeurons, double beta, double momentum, IAlgorithm algorithm)
         {
             this._beta = beta;
             this._momentum = momentum;
-            this._ouTtype = ouTtype;
+            _algorithm = algorithm;
             this._numberOfHiddenNeurons = numberOfHiddenNeurons;
 
             this._trainingInput = ArrayHelper.AddBiasInput(trainingInput); // + bias
@@ -61,11 +57,7 @@ namespace ConsoleApp3
 
         private void BackwardsPhase(double[] outputs, double[,] hiddenResults, double eta)
         {
-            var deltasOs = new double[outputs.Length];
-            for (int i = 0; i < outputs.Length; i++)
-            {
-                deltasOs[i] = (outputs[i] - _trainingTargets[i]) * outputs[i] * (1 - outputs[i]);
-            }
+            var deltasOs = _algorithm.ProcessDeltaOs(outputs, _trainingTargets);
 
             var deltasHs = new Double[hiddenResults.RowLength(), hiddenResults.ColumnLength()];
             for (int i = 0; i < deltasHs.RowLength(); i++)
@@ -136,10 +128,10 @@ namespace ConsoleApp3
                     var mult = value * weight;
                     outputs[i] = outputs[i] + mult;
                 }
-                var sigmoidValue = MathHelper.Sigmoid(outputs[i], _beta);
-                outputs[i] = sigmoidValue;
             }
-            return outputs;
+
+            var processedOutputs = _algorithm.ProcessOutputs(outputs);
+            return processedOutputs;
         }
 
         private double[,] CalculateHiddenLayer(double[,] inputs)
@@ -157,8 +149,9 @@ namespace ConsoleApp3
                         var mult = input * weight;
                         hiddenLayerNauronValues[i, j] = hiddenLayerNauronValues[i, j] + mult;
                     }
-                    var sigmoidValue = MathHelper.Sigmoid(hiddenLayerNauronValues[i, j], _beta);
-                    hiddenLayerNauronValues[i, j] = sigmoidValue;
+                    //var sigmoidValue = MathHelper.Sigmoid(hiddenLayerNauronValues[i, j], _beta);
+                    //hiddenLayerNauronValues[i, j] = sigmoidValue;
+                    hiddenLayerNauronValues[i, j] = 1 / (1 + Math.Exp(-_beta * hiddenLayerNauronValues[i, j]));
                 }
             }
 
@@ -192,26 +185,26 @@ namespace ConsoleApp3
                 var output = outputs[i];
                 var targetRound = (int)Math.Round(target);
                 var outputRound = (int)Math.Round(output);
-                confusionMatrix[targetRound, outputRound]++;
+              //  confusionMatrix[targetRound, outputRound]++;
             }
 
             int rowLength = confusionMatrix.GetLength(0);
             int colLength = confusionMatrix.GetLength(1);
 
 
-            for (int i = 0; i < rowLength; i++)
-            {
-                Console.WriteLine("---------------------");
-                for (int j = 0; j < colLength; j++)
-                {
-                    Console.Write($"| {confusionMatrix[i, j]} |");
-                }
+            //for (int i = 0; i < rowLength; i++)
+            //{
+            //    Console.WriteLine("---------------------");
+            //    for (int j = 0; j < colLength; j++)
+            //    {
+            //        Console.Write($"| {confusionMatrix[i, j]} |");
+            //    }
 
-                Console.Write(Environment.NewLine+ Environment.NewLine);
-            }
-            Console.Write("---------------------");
-            
-            Console.Write( Environment.NewLine);
+            //    Console.Write(Environment.NewLine + Environment.NewLine);
+            //}
+            //Console.Write("---------------------");
+
+            Console.Write(Environment.NewLine);
 
         }
 

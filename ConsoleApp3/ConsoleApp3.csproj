@@ -42,7 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\IAlgorithm.cs" />
+    <Compile Include="Algorithms\Linear.cs" />
     <Compile Include="Algorithms\Logistic.cs" />
+    <Compile Include="Algorithms\Softmax.cs" />
     <Compile Include="ArrayHelper.cs" />
     <Compile Include="ForwardPhaseResult.cs" />
     <Compile Include="MultiLayerPerceptron.cs" />

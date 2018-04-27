@@ -65,6 +65,15 @@ namespace ConsoleApp3
                 for (int j = 0; j < deltasHs.ColumnLength(); j++)
                 {
                     deltasHs[i, j] = deltasHs[i, j] + hiddenResults[i, j] * deltasOs[i] * _outputWeights[j];
+                    var infinity = deltasHs[i, j];
+                    if (double.IsNegativeInfinity(infinity))
+                    {
+                        deltasHs[i, j] = double.MinValue;
+                    }
+                    else if (double.IsPositiveInfinity(infinity))
+                    {
+                        deltasHs[i, j] = double.MaxValue;
+                    }
                 }
             }
 
@@ -78,11 +87,29 @@ namespace ConsoleApp3
                     {
                         var update = eta * _trainingInput[k, i] * deltasHs[k, j];
                         fullUpdate += update;
+                        var infinity = fullUpdate;
+                        if (double.IsNegativeInfinity(infinity))
+                        {
+                            fullUpdate = double.MinValue;
+                        }
+                        else if (double.IsPositiveInfinity(infinity))
+                        {
+                            fullUpdate = double.MaxValue;
+                        }
                     }
                     var momentum = _momentum * _lastHiddenUpdates[i, j];
                     fullUpdate += momentum;
                     _lastHiddenUpdates[i, j] = fullUpdate;
                     _hiddenWeights[i, j] = _hiddenWeights[i, j] - fullUpdate;
+                    var infinity1 = _hiddenWeights[i, j];
+                    if (double.IsNegativeInfinity(infinity1))
+                    {
+                        _hiddenWeights[i, j] = double.MinValue;
+                    }
+                    else if (double.IsPositiveInfinity(infinity1))
+                    {
+                        _hiddenWeights[i, j] = double.MaxValue;
+                    }
                 }
             }
 
@@ -96,8 +123,29 @@ namespace ConsoleApp3
                 }
                 var momentum = _momentum * _lastOutputUpdates[i];
                 fullUpdate += momentum;
+
+                var infinity = fullUpdate;
+                if (double.IsNegativeInfinity(infinity))
+                {
+                    fullUpdate = double.MinValue;
+                }
+                else if (double.IsPositiveInfinity(infinity))
+                {
+                    fullUpdate = double.MaxValue;
+                }
+
                 _outputWeights[i] = _outputWeights[i] - fullUpdate;
                 _lastOutputUpdates[i] = fullUpdate;
+
+                var infinity1 = _outputWeights[i];
+                if (double.IsNegativeInfinity(infinity1))
+                {
+                    _outputWeights[i] = double.MinValue;
+                }
+                else if (double.IsPositiveInfinity(infinity1))
+                {
+                    _outputWeights[i] = double.MaxValue;
+                }
             }
 
         }
@@ -127,6 +175,16 @@ namespace ConsoleApp3
                     var weight = _outputWeights[k];
                     var mult = value * weight;
                     outputs[i] = outputs[i] + mult;
+
+                    var infinity1 = outputs[i];
+                    if (double.IsNegativeInfinity(infinity1))
+                    {
+                        outputs[i] = double.MinValue;
+                    }
+                    else if (double.IsPositiveInfinity(infinity1))
+                    {
+                        outputs[i] = double.MaxValue;
+                    }
                 }
             }
 
@@ -149,9 +207,17 @@ namespace ConsoleApp3
                         var mult = input * weight;
                         hiddenLayerNauronValues[i, j] = hiddenLayerNauronValues[i, j] + mult;
                     }
-                    //var sigmoidValue = MathHelper.Sigmoid(hiddenLayerNauronValues[i, j], _beta);
-                    //hiddenLayerNauronValues[i, j] = sigmoidValue;
                     hiddenLayerNauronValues[i, j] = 1 / (1 + Math.Exp(-_beta * hiddenLayerNauronValues[i, j]));
+
+                    var infinity1 = hiddenLayerNauronValues[i,j];
+                    if (double.IsNegativeInfinity(infinity1))
+                    {
+                        hiddenLayerNauronValues[i,j] = double.MinValue;
+                    }
+                    else if (double.IsPositiveInfinity(infinity1))
+                    {
+                        hiddenLayerNauronValues[i,j] = double.MaxValue;
+                    }
                 }
             }
 
@@ -185,7 +251,7 @@ namespace ConsoleApp3
                 var output = outputs[i];
                 var targetRound = (int)Math.Round(target);
                 var outputRound = (int)Math.Round(output);
-              //  confusionMatrix[targetRound, outputRound]++;
+                //  confusionMatrix[targetRound, outputRound]++;
             }
 
             int rowLength = confusionMatrix.GetLength(0);

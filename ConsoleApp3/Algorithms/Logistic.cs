@@ -21,6 +21,15 @@ namespace ConsoleApp3.Algorithms
             for (int i = 0; i < outputs.Length; i++)
             {
                 deltaOs[i] = _beta * (outputs[i] - tagets[i]) * outputs[i] * (1 - outputs[i]);
+                var infinity = deltaOs[i];
+                if (double.IsNegativeInfinity(infinity))
+                {
+                    deltaOs[i] = double.MinValue;
+                }
+                else if (double.IsPositiveInfinity(infinity))
+                {
+                    deltaOs[i] = double.MaxValue;
+                }
             }
 
             return deltaOs;
@@ -31,17 +40,20 @@ namespace ConsoleApp3.Algorithms
             for (int i = 0; i < outputs.Length; i++)
             {
                 outputs[i] = 1 / (1 * Math.Exp(-_beta * outputs[i]));
+                var infinity = outputs[i];
+                if (double.IsNegativeInfinity(infinity))
+                {
+                    outputs[i] = double.MinValue;
+                }
+                else if (double.IsPositiveInfinity(infinity))
+                {
+                    outputs[i] = double.MaxValue;
+                }
             }
 
             return outputs;
         }
 
         
-    }
-
-    public interface IAlgorithm
-    {
-        double[] ProcessDeltaOs(double[] outputs, double[] tagets);
-        double[] ProcessOutputs(double[] outputs);
     }
 }

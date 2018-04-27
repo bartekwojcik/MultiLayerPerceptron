@@ -12,7 +12,7 @@ namespace ConsoleApp3
     {
         static void Main(string[] args)
         {
-            int interation = 5000;
+            int interation = 1000;
             double eta = 0.25;
             int neurons = 5;
             var beta = 1;
@@ -101,19 +101,22 @@ namespace ConsoleApp3
                 0.186050921,
             };
             var randomTargets1 = (double[])randomTargets.Clone();
-            var algorithm = new Softmax(randomTargets1.Length);//new Logistic(beta);
 
-            var xorPerc = new MultiLayerPerceptron(inputs, (double[])xortargets.Clone(), neurons, beta, momentum, algorithm);
-            var orPerc = new MultiLayerPerceptron(inputs, (double[])ortargets.Clone(), neurons, beta, momentum, algorithm);
-            var andPerc = new MultiLayerPerceptron(inputs, (double[])andtargets.Clone(), neurons, beta, momentum, algorithm);
-            var randomPerc = new MultiLayerPerceptron(RandomInputs, randomTargets, neurons, beta, momentum, algorithm);
+            var softmax = new Softmax(inputs.GetLength(0));
+            var logistic = new Logistic(beta);
+            var linear = new Linear(randomTargets1.Length);
+
+            var xorPerc = new MultiLayerPerceptron(inputs, (double[])xortargets.Clone(), neurons, beta, momentum, logistic);
+            var orPerc = new MultiLayerPerceptron(inputs, (double[])ortargets.Clone(), neurons, beta, momentum, logistic);
+            var andPerc = new MultiLayerPerceptron(inputs, (double[])andtargets.Clone(), neurons, beta, momentum, logistic);
+            var randomPerc = new MultiLayerPerceptron(RandomInputs, randomTargets, neurons, beta, momentum, logistic);
 
             var tasks = new Task[]
             {
                 Task.Factory.StartNew(() => xorPerc.Train(interation, eta)),
                 Task.Factory.StartNew(() => orPerc.Train(interation, eta)),
                 Task.Factory.StartNew(() => andPerc.Train(interation, eta)),
-                Task.Factory.StartNew(() => randomPerc.Train(interation, eta))
+                Task.Factory.StartNew(() => randomPerc.Train(interation*10, eta))
             };
 
             Console.Out.WriteLine("Start" + Environment.NewLine);

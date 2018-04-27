@@ -238,7 +238,10 @@ namespace ConsoleApp3
                     line += $"{inputs[i, j]}, ";
                 }
 
-                line += $"| target: {targets[i]}, output: {Math.Round(outputs[i], 4)}";
+                var target = targets[i];
+                var output = Math.Round(outputs[i], 4);
+                var difference = target - output;
+                line += $"| target: {target}, output: {Math.Round(output, 4)}, diffrence: {difference}";
                 Console.Out.WriteLine(line);
             }
             var classes = targets.Distinct().ToArray();

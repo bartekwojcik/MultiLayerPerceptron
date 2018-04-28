@@ -147,7 +147,6 @@ namespace ConsoleApp3
                     _outputWeights[i] = double.MaxValue;
                 }
             }
-
         }
 
         private ForwardPhaseResult ForwardPhase(double[,] inputs)

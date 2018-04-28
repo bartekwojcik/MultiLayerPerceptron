@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using ConsoleApp3.Algorithms;
+using MultiLayerPerceptron.Algorithms;
 
-namespace ConsoleApp3
+namespace MultiLayerPerceptron
 {
     public class MultiLayerPerceptron
     {

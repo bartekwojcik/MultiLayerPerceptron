@@ -1,4 +1,4 @@
-﻿namespace ConsoleApp3.Algorithms
+﻿namespace MultiLayerPerceptron.Algorithms
 {
     public interface IAlgorithm
     {

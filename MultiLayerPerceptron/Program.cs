@@ -8,7 +8,7 @@ namespace MultiLayerPerceptron
     {
         static void Main(string[] args)
         {
-            int interation = 1000;
+            int interation = 5000;
             double eta = 0.25;
             int neurons = 5;
             var beta = 1;
@@ -102,24 +102,24 @@ namespace MultiLayerPerceptron
             var logistic = new Logistic(beta);
             var linear = new Linear(randomTargets1.Length);
 
-            var xorPerc = new MultiLayerPerceptron(inputs, (double[])xortargets.Clone(), neurons, beta, momentum, logistic);
-            var orPerc = new MultiLayerPerceptron(inputs, (double[])ortargets.Clone(), neurons, beta, momentum, logistic);
-            var andPerc = new MultiLayerPerceptron(inputs, (double[])andtargets.Clone(), neurons, beta, momentum, logistic);
-            var randomPerc = new MultiLayerPerceptron(RandomInputs, randomTargets, neurons, beta, momentum, logistic);
+            var xorPerc = new MultiLayerPerceptron(inputs, (double[])xortargets.Clone(), neurons, beta, momentum, linear);
+            var orPerc = new MultiLayerPerceptron(inputs, (double[])ortargets.Clone(), neurons, beta, momentum, linear);
+            var andPerc = new MultiLayerPerceptron(inputs, (double[])andtargets.Clone(), neurons, beta, momentum, linear);
+            var randomPerc = new MultiLayerPerceptron(RandomInputs, randomTargets, neurons, beta, momentum, new Softmax(randomTargets.GetLength(0)));
 
             var tasks = new Task[]
             {
                 Task.Factory.StartNew(() => xorPerc.Train(interation, eta)),
                 Task.Factory.StartNew(() => orPerc.Train(interation, eta)),
                 Task.Factory.StartNew(() => andPerc.Train(interation, eta)),
-                Task.Factory.StartNew(() => randomPerc.Train(interation*10, eta))
+                Task.Factory.StartNew(() => randomPerc.Train(interation, eta))
             };
 
             Console.Out.WriteLine("Start" + Environment.NewLine);
             Task.WaitAll(tasks);
             Console.Out.WriteLine("Stop" + Environment.NewLine);
 
-            //xorPerc.Train(interation,eta);
+            xorPerc.Train(interation, eta);
 
             Console.WriteLine("XOR");
             xorPerc.ConfusionMatrix(inputs, xortargets);

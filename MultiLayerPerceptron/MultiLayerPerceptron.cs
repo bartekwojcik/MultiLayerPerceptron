@@ -61,7 +61,9 @@ namespace MultiLayerPerceptron
             {
                 for (int j = 0; j < deltasHs.ColumnLength(); j++)
                 {
-                    deltasHs[i, j] = deltasHs[i, j] + hiddenResults[i, j] * deltasOs[i] * _outputWeights[j];
+                   // deltasHs[i, j] = deltasHs[i, j] + hiddenResults[i, j] * deltasOs[i] * _outputWeights[j];
+                    var deltaOWeight = deltasOs[i] * _outputWeights[j];
+                    deltasHs[i, j] = hiddenResults[i, j] * _beta*(1 - hiddenResults[i, j]) * deltaOWeight;
                     var infinity = deltasHs[i, j];
                     if (double.IsNegativeInfinity(infinity))
                     {
@@ -170,7 +172,7 @@ namespace MultiLayerPerceptron
                     var value = hiddenNeuronsValues[i, k];
                     var weight = _outputWeights[k];
                     var mult = value * weight;
-                    outputs[i] = outputs[i] + mult;
+                    outputs[i] = mult;
 
                     var infinity1 = outputs[i];
                     if (double.IsNegativeInfinity(infinity1))
@@ -236,7 +238,7 @@ namespace MultiLayerPerceptron
 
                 var target = targets[i];
                 var output = Math.Round(outputs[i], 4);
-                var difference = target - output;
+                var difference = Math.Abs(target - output);
                 line += $"| target: {target}, output: {Math.Round(output, 4)}, diffrence: {difference}";
                 Console.Out.WriteLine(line);
             }

@@ -26,6 +26,10 @@ namespace MultiLayerPerceptron.Algorithms
                 {
                     deltaOs[i] = double.MaxValue;
                 }
+                else if (double.IsInfinity(deltaOs[i]))
+                {
+                    throw new Exception();
+                }
             }
 
             return deltaOs;
@@ -33,17 +37,18 @@ namespace MultiLayerPerceptron.Algorithms
 
         public double[] ProcessOutputs(double[] outputs)
         {
+            var result = new double[outputs.Length];
             for (int i = 0; i < outputs.Length; i++)
             {
-                outputs[i] = 1 / (1 * Math.Exp(-_beta * outputs[i]));
-                var infinity = outputs[i];
+                result[i] = 1 / (1 + Math.Exp(-_beta * outputs[i]));
+                var infinity = result[i];
                 if (double.IsNegativeInfinity(infinity))
                 {
-                    outputs[i] = double.MinValue;
+                    result[i] = double.MinValue;
                 }
                 else if (double.IsPositiveInfinity(infinity))
                 {
-                    outputs[i] = double.MaxValue;
+                    result[i] = double.MaxValue;
                 }
             }
 

@@ -98,21 +98,24 @@ namespace MultiLayerPerceptron
             };
             var randomTargets1 = (double[])randomTargets.Clone();
 
-            var softmax = new Softmax(inputs.GetLength(0));
+          
             var logistic = new Logistic(beta);
             var linear = new Linear(randomTargets1.Length);
 
-            var xorPerc = new MultiLayerPerceptron(inputs, (double[])xortargets.Clone(), neurons, beta, momentum, linear);
-            var orPerc = new MultiLayerPerceptron(inputs, (double[])ortargets.Clone(), neurons, beta, momentum, linear);
-            var andPerc = new MultiLayerPerceptron(inputs, (double[])andtargets.Clone(), neurons, beta, momentum, linear);
-            var randomPerc = new MultiLayerPerceptron(RandomInputs, randomTargets, neurons, beta, momentum, new Softmax(randomTargets.GetLength(0)));
+            var gateSoftmax = new Softmax(inputs.GetLength(0));
+            var gateLinear = new Linear(inputs.RowLength());
+
+            var xorPerc = new MultiLayerPerceptron(inputs, (double[])xortargets.Clone(), neurons, beta, momentum, gateLinear);
+            var orPerc = new MultiLayerPerceptron(inputs, (double[])ortargets.Clone(), neurons, beta, momentum, gateLinear);
+            var andPerc = new MultiLayerPerceptron(inputs, (double[])andtargets.Clone(), neurons, beta, momentum, gateLinear);
+            var randomPerc = new MultiLayerPerceptron(RandomInputs, randomTargets, neurons, beta, momentum, linear);
 
             var tasks = new Task[]
             {
                 Task.Factory.StartNew(() => xorPerc.Train(interation, eta)),
                 Task.Factory.StartNew(() => orPerc.Train(interation, eta)),
                 Task.Factory.StartNew(() => andPerc.Train(interation, eta)),
-                Task.Factory.StartNew(() => randomPerc.Train(interation, eta))
+                Task.Factory.StartNew(() => randomPerc.Train(interation+40000, eta))
             };
 
             Console.Out.WriteLine("Start" + Environment.NewLine);

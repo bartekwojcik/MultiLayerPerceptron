@@ -45,7 +45,7 @@ namespace MultiLayerPerceptron
             _lastOutputUpdates = new double[_outputWeights.Length];
             for (int i = 0; i < iterations; i++)
             {
-                ShuffleRows();
+               // ShuffleRows();
                 this._currentIteration = i;
                 var result = ForwardPhase(_trainingInput);
                 BackwardsPhase(result.OutputResult, result.HiddenValues, eta);
@@ -172,7 +172,7 @@ namespace MultiLayerPerceptron
                     var value = hiddenNeuronsValues[i, k];
                     var weight = _outputWeights[k];
                     var mult = value * weight;
-                    outputs[i] = mult;
+                    outputs[i] += mult;
 
                     var infinity1 = outputs[i];
                     if (double.IsNegativeInfinity(infinity1))
@@ -236,10 +236,10 @@ namespace MultiLayerPerceptron
                     line += $"{inputs[i, j]}, ";
                 }
 
-                var target = targets[i];
+                var target = Math.Round(targets[i],2);
                 var output = Math.Round(outputs[i], 4);
-                var difference = Math.Abs(target - output);
-                line += $"| target: {target}, output: {Math.Round(output, 4)}, diffrence: {difference}";
+                var difference = Math.Round(Math.Abs(target - output),2);
+                line += $"| target: {target}, output: {Math.Round(output, 2)}, diffrence: {difference}";
                 Console.Out.WriteLine(line);
             }
             var classes = targets.Distinct().ToArray();
@@ -281,7 +281,9 @@ namespace MultiLayerPerceptron
         }
 
 
-
+        /// <summary>
+        /// This function is fucked up
+        /// </summary>
         private void ShuffleRows()
         {
             var dim1 = _trainingInput.GetLength(0);

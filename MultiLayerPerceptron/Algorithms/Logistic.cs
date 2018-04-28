@@ -16,6 +16,7 @@ namespace MultiLayerPerceptron.Algorithms
             var deltaOs = new double[outputs.Length];
             for (int i = 0; i < outputs.Length; i++)
             {
+                //here is something wrong
                 deltaOs[i] = _beta * (outputs[i] - tagets[i]) * outputs[i] * (1 - outputs[i]);
                 var infinity = deltaOs[i];
                 if (double.IsNegativeInfinity(infinity))
@@ -36,7 +37,7 @@ namespace MultiLayerPerceptron.Algorithms
         }
 
         public double[] ProcessOutputs(double[] outputs)
-        {
+        {   //here is something wrong
             var result = new double[outputs.Length];
             for (int i = 0; i < outputs.Length; i++)
             {
